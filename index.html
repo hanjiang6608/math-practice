@@ -304,6 +304,11 @@
             margin-top: 10px;
         }
         
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
         .feedback {
             margin-top: 8px;
             padding: 8px;
@@ -1072,6 +1077,24 @@
                 document.body.classList.add('wechat-browser');
             }
             
+            // 监听输入框输入事件，实现自动提交
+            const answerInput = document.getElementById('answer-input');
+            answerInput.addEventListener('input', function(e) {
+                if (!isAnswering || !currentQuestion) return;
+                
+                const inputValue = e.target.value;
+                const correctAnswer = currentQuestion.answer;
+                const answerLength = String(correctAnswer).length;
+                
+                // 当输入位数等于答案位数时，自动提交
+                if (inputValue.length === answerLength) {
+                    // 延迟100ms，让用户看到输入的数字
+                    setTimeout(() => {
+                        submitAnswer();
+                    }, 100);
+                }
+            });
+            
             updateStats();
         });
         
@@ -1250,11 +1273,16 @@
         
         // 处理按钮动作
         function handleAction() {
+            const btnText = document.getElementById('action-btn').textContent;
             if (!isAnswering) {
-                startPractice();
-            } else {
-                submitAnswer();
+                if (btnText === '下一题') {
+                    // 如果显示下一题，点击后开始新题目
+                    startPractice();
+                } else {
+                    startPractice();
+                }
             }
+            // 答题过程中按钮不可点击，由程序自动判断
         }
         
         // 开始练习
@@ -1264,7 +1292,9 @@
             
             document.getElementById('question-text').textContent = currentQuestion.text;
             document.getElementById('answer-input').value = '';
-            document.getElementById('action-btn').textContent = '提交答案';
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.textContent = '自动判断中...';
+            actionBtn.disabled = true;
             document.getElementById('question-card').className = 'question-card';
             document.getElementById('feedback').className = 'feedback';
             // 隐藏数字键盘，使用系统键盘
@@ -1358,7 +1388,9 @@
             
             updateStats();
             
-            document.getElementById('action-btn').textContent = '下一题';
+            const actionBtn = document.getElementById('action-btn');
+            actionBtn.textContent = '下一题';
+            actionBtn.disabled = false;
             isAnswering = false;
         }
         
