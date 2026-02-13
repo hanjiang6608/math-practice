@@ -890,6 +890,31 @@
             50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1) translateY(-100px); opacity: 0; }
         }
+        
+        /* 升级动画 */
+        .level-up-animation {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            animation: levelUpPop 2s ease forwards;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        @keyframes levelUpPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) translateY(-50px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -1064,6 +1089,11 @@
         let isAnswering = false;
         let currentDifficulty = 'easy';
         let consecutiveCorrect = 0; // 连续答对计数器
+        
+        // 组题设置
+        const GROUP_SIZE = 10; // 每组10道题
+        let currentGroupCount = 0; // 当前组内题目计数
+        let groupCorrectCount = 0; // 当前组内正确题数
         
         // 音效设置（超级玛丽金币声）
         const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
@@ -1290,10 +1320,13 @@
             isAnswering = true;
             currentQuestion = generateQuestion();
             
+            // 增加组内计数
+            currentGroupCount++;
+            
             document.getElementById('question-text').textContent = currentQuestion.text;
             document.getElementById('answer-input').value = '';
             const actionBtn = document.getElementById('action-btn');
-            actionBtn.textContent = '自动判断中...';
+            actionBtn.textContent = `第 ${currentGroupCount}/${GROUP_SIZE} 题`;
             actionBtn.disabled = true;
             document.getElementById('question-card').className = 'question-card';
             document.getElementById('feedback').className = 'feedback';
@@ -1364,6 +1397,7 @@
             if (isCorrect) {
                 card.classList.add('correct');
                 consecutiveCorrect++; // 增加连续答对计数
+                groupCorrectCount++; // 增加组内正确计数
                 
                 // 播放正确音效
                 correctSound.currentTime = 0;
@@ -1388,8 +1422,39 @@
             
             updateStats();
             
+            // 检查是否完成一组（10道题）
+            let btnText = '下一题';
+            if (currentGroupCount >= GROUP_SIZE) {
+                // 计算组内正确率
+                const groupAccuracy = (groupCorrectCount / GROUP_SIZE) * 100;
+                
+                if (groupAccuracy === 100) {
+                    // 正确率100%，自动升级难度
+                    if (currentDifficulty === 'easy') {
+                        currentDifficulty = 'medium';
+                        btnText = '🎉 升级到中级！';
+                        showLevelUpAnimation('中级');
+                    } else if (currentDifficulty === 'medium') {
+                        currentDifficulty = 'hard';
+                        btnText = '🎉 升级到困难！';
+                        showLevelUpAnimation('困难');
+                    } else {
+                        btnText = '🎉 已完成困难！';
+                    }
+                } else {
+                    btnText = `组完成！正确率 ${groupAccuracy}%`;
+                }
+                
+                // 重置组计数
+                currentGroupCount = 0;
+                groupCorrectCount = 0;
+                
+                // 更新难度按钮显示
+                updateDifficultyButtons();
+            }
+            
             const actionBtn = document.getElementById('action-btn');
-            actionBtn.textContent = '下一题';
+            actionBtn.textContent = btnText;
             actionBtn.disabled = false;
             isAnswering = false;
         }
@@ -1544,6 +1609,40 @@
             setTimeout(() => {
                 star.remove();
             }, 1000);
+        }
+        
+        // 显示升级动画
+        function showLevelUpAnimation(levelName) {
+            // 创建升级提示元素
+            const levelUp = document.createElement('div');
+            levelUp.className = 'level-up-animation';
+            levelUp.innerHTML = `🎊 升级到${levelName}难度！🎊`;
+            document.body.appendChild(levelUp);
+            
+            // 播放升级音效（使用更欢快的音效）
+            const levelUpSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
+            levelUpSound.volume = 0.6;
+            levelUpSound.play().catch(e => console.log('升级音效播放失败:', e));
+            
+            // 2秒后移除
+            setTimeout(() => {
+                levelUp.remove();
+            }, 2000);
+        }
+        
+        // 更新难度按钮显示
+        function updateDifficultyButtons() {
+            const buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent === '简单' && currentDifficulty === 'easy') {
+                    btn.classList.add('active');
+                } else if (btn.textContent === '中等' && currentDifficulty === 'medium') {
+                    btn.classList.add('active');
+                } else if (btn.textContent === '困难' && currentDifficulty === 'hard') {
+                    btn.classList.add('active');
+                }
+            });
         }
         
         // 清空历史
