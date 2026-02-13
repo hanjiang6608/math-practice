@@ -960,20 +960,8 @@
                 
                 <button class="btn btn-primary" id="action-btn" onclick="handleAction()">开始练习</button>
                 
-                <div class="number-pad" id="number-pad" style="display: none;">
-                    <button class="num-btn" onclick="inputNumber('1')">1</button>
-                    <button class="num-btn" onclick="inputNumber('2')">2</button>
-                    <button class="num-btn" onclick="inputNumber('3')">3</button>
-                    <button class="num-btn" onclick="inputNumber('4')">4</button>
-                    <button class="num-btn" onclick="inputNumber('5')">5</button>
-                    <button class="num-btn" onclick="inputNumber('6')">6</button>
-                    <button class="num-btn" onclick="inputNumber('7')">7</button>
-                    <button class="num-btn" onclick="inputNumber('8')">8</button>
-                    <button class="num-btn" onclick="inputNumber('9')">9</button>
-                    <button class="num-btn clear" onclick="clearInput()">清除</button>
-                    <button class="num-btn" onclick="inputNumber('0')">0</button>
-                    <button class="num-btn submit" onclick="submitAnswer()">确定</button>
-                </div>
+                <!-- 数字键盘已禁用，使用系统键盘 -->
+                <div class="number-pad" id="number-pad" style="display: none;"></div>
             </div>
             
             <!-- 历史记录页面 -->
@@ -1243,6 +1231,8 @@
         function handleAction() {
             if (!isAnswering) {
                 startPractice();
+            } else {
+                submitAnswer();
             }
         }
         
