@@ -1532,9 +1532,13 @@
             document.getElementById('share-guide').classList.remove('show');
         }
         
-        // 键盘支持
+        // 键盘支持（仅PC端）
         document.addEventListener('keydown', function(e) {
             if (!isAnswering) return;
+            
+            // 检测是否为移动设备，如果是则不处理键盘事件（避免重复输入）
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) return;
             
             if (e.key >= '0' && e.key <= '9') {
                 inputNumber(e.key);
