@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="description" content="小学三年级数学智能练习系统 - 微信H5">
+    <meta name="keywords" content="小学数学,数学练习,三年级数学,口算练习">
+    
+    <!-- 微信分享配置 -->
+    <meta property="og:title" content="🎓 小学三年级数学练习">
+    <meta property="og:description" content="智能出题，自动分析薄弱点，让数学学习更高效！">
+    <meta property="og:image" content="https://via.placeholder.com/300x300/667eea/ffffff?text=数学练习">
+    
+    <!-- 禁止缓存（开发阶段） -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>🎓 三年级数学练习</title>
+    
+    <!-- GitHub Pages 基础路径设置 -->
+    <base href="https://hanjiang6608.github.io/math-practice/">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: 10px;
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            min-height: calc(100vh - 20px);
+            min-height: calc(100dvh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .share-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            flex-shrink: 0;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+        }
+        
+        .nav-tab.active {
+            color: #667eea;
+            font-weight: 600;
+            background: white;
+            position: relative;
+        }
+        
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 3px;
+            background: #667eea;
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .page {
+            display: none;
+            height: 100%;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* 练习页面样式 */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #667eea;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        
+        .difficulty-selector {
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .difficulty-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .difficulty-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .difficulty-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .question-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-card.correct {
+            border-color: #28a745;
+            background: #d4edda;
+            animation: correctPulse 0.5s ease;
+        }
+        
+        .question-card.wrong {
+            border-color: #dc3545;
+            background: #f8d7da;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .question-text {
+            font-size: 36px;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 28px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            letter-spacing: 2px;
+        }
+        
+        .answer-input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:active {
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .feedback {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 15px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .feedback.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* 数字键盘 */
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .num-btn {
+            padding: 18px;
+            font-size: 24px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 600;
+            color: #495057;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+        }
+        
+        .num-btn:active {
+            background: #667eea;
+            color: white;
+            transform: scale(0.95);
+        }
+        
+        .num-btn.clear {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .num-btn.clear:active {
+            background: #ee5a5a;
+        }
+        
+        .num-btn.submit {
+            background: #51cf66;
+            color: white;
+        }
+        
+        .num-btn.submit:active {
+            background: #40c057;
+        }
+        
+        /* 历史记录页面样式 */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .history-header h2 {
+            font-size: 17px;
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .clear-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .clear-btn:active {
+            background: #ee5a5a;
+            transform: scale(0.95);
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .summary-card .number {
+            font-size: 26px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .summary-card .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        
+        .history-list {
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 5px;
+        }
+        
+        .history-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb {
+            background: #dee2e6;
+            border-radius: 2px;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f5;
+            background: white;
+            transition: background 0.2s;
+        }
+        
+        .history-item:active {
+            background: #f8f9fa;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-question {
+            font-size: 16px;
+            font-weight: 600;
+            color: #212529;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .history-result {
+            text-align: right;
+        }
+        
+        .history-answer {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+        
+        .history-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        
+        .history-status.correct {
+            background: #d3f9d8;
+            color: #2b8a3e;
+        }
+        
+        .history-status.wrong {
+            background: #ffe3e3;
+            color: #c92a2a;
+        }
+        
+        .history-time {
+            font-size: 10px;
+            color: #adb5bd;
+            margin-top: 3px;
+        }
+        
+        /* 错题统计页面样式 */
+        .weakness-header {
+            margin-bottom: 15px;
+        }
+        
+        .weakness-header h2 {
+            font-size: 17px;
+            color: #212529;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .weakness-header p {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .weakness-chart {
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+        }
+        
+        .weakness-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .weakness-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .weakness-label {
+            width: 50px;
+            font-size: 14px;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .weakness-bar {
+            flex: 1;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        
+        .weakness-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .weakness-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .weakness-fill.high {
+            background: linear-gradient(90deg, #ff6b6b, #fa5252);
+        }
+        
+        .weakness-fill.medium {
+            background: linear-gradient(90deg, #ffd43b, #fab005);
+        }
+        
+        .weakness-fill.low {
+            background: linear-gradient(90deg, #51cf66, #40c057);
+        }
+        
+        .weakness-value {
+            width: 45px;
+            font-size: 13px;
+            text-align: right;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .tips-card {
+            background: linear-gradient(135deg, #fff9db 0%, #ffec99 100%);
+            border: 1px solid #ffd43b;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .tips-card h3 {
+            font-size: 14px;
+            color: #e67700;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .tips-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .tips-card li {
+            font-size: 13px;
+            color: #d9480f;
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+        
+        .tips-card li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #adb5bd;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+        
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* 开始界面 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .start-screen.hidden {
+            display: none;
+        }
+        
+        .start-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .start-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .start-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+        
+        .start-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-item {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .feature-text {
+            font-size: 12px;
+        }
+        
+        .start-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .start-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 分享引导 */
+        .guide-tip {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .guide-tip.show {
+            display: flex;
+        }
+        
+        .guide-content {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            max-width: 300px;
+            animation: guidePop 0.3s ease;
+        }
+        
+        @keyframes guidePop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .guide-arrow {
+            font-size: 40px;
+            margin-bottom: 15px;
+            animation: arrowBounce 1s infinite;
+        }
+        
+        @keyframes arrowBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .guide-text {
+            font-size: 15px;
+            color: #495057;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .guide-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 380px) {
+            .question-text {
+                font-size: 30px;
+            }
+            
+            .answer-input {
+                font-size: 24px;
+            }
+            
+            .num-btn {
+                padding: 15px;
+                font-size: 22px;
+            }
+        }
+
+        /* 微信浏览器适配 */
+        .wechat-browser .container {
+            min-height: calc(100vh - 20px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 开始界面 -->
+    <div class="start-screen" id="start-screen">
+        <div class="start-icon">🎓</div>
+        <div class="start-title">数学小达人</div>
+        <div class="start-subtitle">三年级智能练习系统</div>
+        <div class="start-features">
+            <div class="feature-item">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-text">智能出题</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <div class="feature-text">错题分析</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-text">针对练习</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🏆</div>
+                <div class="feature-text">成绩记录</div>
+            </div>
+        </div>
+        <button class="start-btn" onclick="startApp()">开始学习</button>
+    </div>
+
+    <!-- 分享引导 -->
+    <div class="guide-tip" id="share-guide">
+        <div class="guide-content">
+            <div class="guide-arrow">👆</div>
+            <div class="guide-text">点击右上角菜单<br>选择「发送给朋友」<br>一起练习更有趣！</div>
+            <button class="guide-btn" onclick="hideShareGuide()">我知道了</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎓 数学练习</h1>
+            <div class="subtitle">智能出题 · 针对训练</div>
+            <button class="share-btn" onclick="showShareGuide()">分享</button>
+        </div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchPage('practice')">练习</button>
+            <button class="nav-tab" onclick="switchPage('history')">记录</button>
+            <button class="nav-tab" onclick="switchPage('weakness')">分析</button>
+        </div>
+        
+        <div class="content">
+            <!-- 练习页面 -->
+            <div id="practice-page" class="page active">
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-count">0</div>
+                        <div class="stat-label">总题数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="correct-count">0</div>
+                        <div class="stat-label">正确</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="wrong-count">0</div>
+                        <div class="stat-label">错误</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="accuracy">0%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                </div>
+                
+                <div class="difficulty-selector">
+                    <label>选择难度：</label>
+                    <div class="difficulty-btns">
+                        <button class="difficulty-btn active" onclick="setDifficulty('easy')">简单</button>
+                        <button class="difficulty-btn" onclick="setDifficulty('medium')">中等</button>
+                        <button class="difficulty-btn" onclick="setDifficulty('hard')">困难</button>
+                    </div>
+                </div>
+                
+                <div class="question-card" id="question-card">
+                    <div class="question-text" id="question-text">点击开始练习</div>
+                    <input type="number" class="answer-input" id="answer-input" placeholder="输入答案" readonly>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+                
+                <button class="btn btn-primary" id="action-btn" onclick="handleAction()">开始练习</button>
+                
+                <div class="number-pad" id="number-pad" style="display: none;">
+                    <button class="num-btn" onclick="inputNumber('1')">1</button>
+                    <button class="num-btn" onclick="inputNumber('2')">2</button>
+                    <button class="num-btn" onclick="inputNumber('3')">3</button>
+                    <button class="num-btn" onclick="inputNumber('4')">4</button>
+                    <button class="num-btn" onclick="inputNumber('5')">5</button>
+                    <button class="num-btn" onclick="inputNumber('6')">6</button>
+                    <button class="num-btn" onclick="inputNumber('7')">7</button>
+                    <button class="num-btn" onclick="inputNumber('8')">8</button>
+                    <button class="num-btn" onclick="inputNumber('9')">9</button>
+                    <button class="num-btn clear" onclick="clearInput()">清除</button>
+                    <button class="num-btn" onclick="inputNumber('0')">0</button>
+                    <button class="num-btn submit" onclick="submitAnswer()">确定</button>
+                </div>
+            </div>
+            
+            <!-- 历史记录页面 -->
+            <div id="history-page" class="page">
+                <div class="history-header">
+                    <h2>📊 练习记录</h2>
+                    <button class="clear-btn" onclick="clearHistory()">清空</button>
+                </div>
+                
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="number" id="history-total">0</div>
+                        <div class="label">总题数</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="number" id="history-correct">0</div>
+                        <div class="label">正确</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="number" id="history-wrong">0</div>
+                        <div class="label">错误</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="number" id="history-accuracy">0%</div>
+                        <div class="label">正确率</div>
+                    </div>
+                </div>
+                
+                <div class="history-list" id="history-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无练习记录</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 错题分析页面 -->
+            <div id="weakness-page" class="page">
+                <div class="weakness-header">
+                    <h2>🔍 薄弱点分析</h2>
+                    <p>系统根据错题类型自动调整出题比例<br>错误越多，该类型题目出现概率越高</p>
+                </div>
+                
+                <div class="weakness-chart" id="weakness-chart">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">暂无足够数据进行分析<br>请先完成一些练习</div>
+                    </div>
+                </div>
+                
+                <div class="tips-card" id="tips-card" style="display: none;">
+                    <h3>💡 学习建议</h3>
+                    <ul id="tips-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检测是否在GitHub Pages环境
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        
+        // 数据存储
+        let historyData = JSON.parse(localStorage.getItem('mathHistory')) || [];
+        let weaknessData = JSON.parse(localStorage.getItem('mathWeakness')) || {
+            addition: { total: 0, wrong: 0 },
+            subtraction: { total: 0, wrong: 0 },
+            multiplication: { total: 0, wrong: 0 },
+            division: { total: 0, wrong: 0 },
+            mixed: { total: 0, wrong: 0 }
+        };
+        
+        let currentQuestion = null;
+        let isAnswering = false;
+        let currentDifficulty = 'easy';
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检测微信浏览器
+            const isWechat = /MicroMessenger/i.test(navigator.userAgent);
+            if (isWechat) {
+                document.body.classList.add('wechat-browser');
+            }
+            
+            updateStats();
+        });
+        
+        // 开始应用
+        function startApp() {
+            document.getElementById('start-screen').classList.add('hidden');
+            updateStats();
+            renderHistory();
+            renderWeakness();
+        }
+        
+        // 页面切换
+        function switchPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById(page + '-page').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (page === 'history') {
+                renderHistory();
+            } else if (page === 'weakness') {
+                renderWeakness();
+            }
+        }
+        
+        // 设置难度
+        function setDifficulty(level) {
+            currentDifficulty = level;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // 生成题目
+        function generateQuestion() {
+            const types = ['addition', 'subtraction', 'multiplication', 'division'];
+            
+            // 计算权重
+            let weights = types.map(type => {
+                const data = weaknessData[type];
+                if (data.total === 0) return 1;
+                const errorRate = data.wrong / data.total;
+                return 0.3 + errorRate * 2;
+            });
+            
+            // 根据难度调整
+            if (currentDifficulty === 'easy') {
+                weights[0] *= 1.5;
+                weights[1] *= 1.3;
+            } else if (currentDifficulty === 'hard') {
+                weights[2] *= 1.5;
+                weights[3] *= 1.3;
+            }
+            
+            // 加权随机选择
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+            let selectedType = types[0];
+            
+            for (let i = 0; i < types.length; i++) {
+                random -= weights[i];
+                if (random <= 0) {
+                    selectedType = types[i];
+                    break;
+                }
+            }
+            
+            let question = {};
+            
+            switch(selectedType) {
+                case 'addition':
+                    question = generateAddition();
+                    break;
+                case 'subtraction':
+                    question = generateSubtraction();
+                    break;
+                case 'multiplication':
+                    question = generateMultiplication();
+                    break;
+                case 'division':
+                    question = generateDivision();
+                    break;
+            }
+            
+            question.type = selectedType;
+            return question;
+        }
+        
+        // 生成加法题
+        function generateAddition() {
+            let a, b;
+            if (currentDifficulty === 'easy') {
+                a = Math.floor(Math.random() * 50) + 1;
+                b = Math.floor(Math.random() * 50) + 1;
+            } else if (currentDifficulty === 'medium') {
+                a = Math.floor(Math.random() * 500) + 100;
+                b = Math.floor(Math.random() * 500) + 100;
+            } else {
+                a = Math.floor(Math.random() * 900) + 100;
+                b = Math.floor(Math.random() * 900) + 100;
+            }
+            
+            return {
+                text: `${a} + ${b} = ?`,
+                answer: a + b,
+                display: `${a} + ${b}`
+            };
+        }
+        
+        // 生成减法题
+        function generateSubtraction() {
+            let a, b;
+            if (currentDifficulty === 'easy') {
+                a = Math.floor(Math.random() * 50) + 10;
+                b = Math.floor(Math.random() * a) + 1;
+            } else if (currentDifficulty === 'medium') {
+                a = Math.floor(Math.random() * 500) + 100;
+                b = Math.floor(Math.random() * a) + 10;
+            } else {
+                a = Math.floor(Math.random() * 900) + 100;
+                b = Math.floor(Math.random() * a) + 50;
+            }
+            
+            return {
+                text: `${a} - ${b} = ?`,
+                answer: a - b,
+                display: `${a} - ${b}`
+            };
+        }
+        
+        // 生成乘法题
+        function generateMultiplication() {
+            let a, b;
+            if (currentDifficulty === 'easy') {
+                a = Math.floor(Math.random() * 9) + 1;
+                b = Math.floor(Math.random() * 9) + 1;
+            } else if (currentDifficulty === 'medium') {
+                a = Math.floor(Math.random() * 20) + 2;
+                b = Math.floor(Math.random() * 9) + 2;
+            } else {
+                a = Math.floor(Math.random() * 50) + 10;
+                b = Math.floor(Math.random() * 20) + 5;
+            }
+            
+            return {
+                text: `${a} × ${b} = ?`,
+                answer: a * b,
+                display: `${a} × ${b}`
+            };
+        }
+        
+        // 生成除法题
+        function generateDivision() {
+            let a, b, result;
+            if (currentDifficulty === 'easy') {
+                b = Math.floor(Math.random() * 9) + 2;
+                result = Math.floor(Math.random() * 9) + 1;
+            } else if (currentDifficulty === 'medium') {
+                b = Math.floor(Math.random() * 9) + 2;
+                result = Math.floor(Math.random() * 20) + 5;
+            } else {
+                b = Math.floor(Math.random() * 20) + 5;
+                result = Math.floor(Math.random() * 20) + 10;
+            }
+            
+            a = b * result;
+            
+            return {
+                text: `${a} ÷ ${b} = ?`,
+                answer: result,
+                display: `${a} ÷ ${b}`
+            };
+        }
+        
+        // 处理按钮动作
+        function handleAction() {
+            if (!isAnswering) {
+                startPractice();
+            }
+        }
+        
+        // 开始练习
+        function startPractice() {
+            isAnswering = true;
+            currentQuestion = generateQuestion();
+            
+            document.getElementById('question-text').textContent = currentQuestion.text;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('action-btn').textContent = '提交答案';
+            document.getElementById('question-card').className = 'question-card';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('number-pad').style.display = 'grid';
+            
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('show');
+        }
+        
+        // 输入数字
+        function inputNumber(num) {
+            const input = document.getElementById('answer-input');
+            if (input.value.length < 6) {
+                input.value += num;
+            }
+        }
+        
+        // 清除输入
+        function clearInput() {
+            document.getElementById('answer-input').value = '';
+        }
+        
+        // 提交答案
+        function submitAnswer() {
+            if (!currentQuestion) return;
+            
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+            if (isNaN(userAnswer)) {
+                alert('请输入答案');
+                return;
+            }
+            
+            const correctAnswer = currentQuestion.answer;
+            const isCorrect = userAnswer === correctAnswer;
+            
+            // 更新薄弱点数据
+            weaknessData[currentQuestion.type].total++;
+            if (!isCorrect) {
+                weaknessData[currentQuestion.type].wrong++;
+            }
+            localStorage.setItem('mathWeakness', JSON.stringify(weaknessData));
+            
+            // 添加到历史记录
+            const record = {
+                question: currentQuestion.display,
+                userAnswer: userAnswer,
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect,
+                type: currentQuestion.type,
+                timestamp: new Date().toISOString()
+            };
+            historyData.unshift(record);
+            if (historyData.length > 100) {
+                historyData = historyData.slice(0, 100);
+            }
+            localStorage.setItem('mathHistory', JSON.stringify(historyData));
+            
+            // 显示结果
+            const card = document.getElementById('question-card');
+            const feedback = document.getElementById('feedback');
+            
+            if (isCorrect) {
+                card.classList.add('correct');
+                feedback.textContent = '🎉 回答正确！真棒！';
+                feedback.className = 'feedback success show';
+            } else {
+                card.classList.add('wrong');
+                feedback.textContent = `❌ 回答错误。正确答案是 ${correctAnswer}`;
+                feedback.className = 'feedback error show';
+            }
+            
+            updateStats();
+            
+            document.getElementById('action-btn').textContent = '下一题';
+            isAnswering = false;
+        }
+        
+        // 更新统计
+        function updateStats() {
+            const total = historyData.length;
+            const correct = historyData.filter(h => h.isCorrect).length;
+            const wrong = total - correct;
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+            
+            document.getElementById('total-count').textContent = total;
+            document.getElementById('correct-count').textContent = correct;
+            document.getElementById('wrong-count').textContent = wrong;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+        
+        // 渲染历史记录
+        function renderHistory() {
+            const total = historyData.length;
+            const correct = historyData.filter(h => h.isCorrect).length;
+            const wrong = total - correct;
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+            
+            document.getElementById('history-total').textContent = total;
+            document.getElementById('history-correct').textContent = correct;
+            document.getElementById('history-wrong').textContent = wrong;
+            document.getElementById('history-accuracy').textContent = accuracy + '%';
+            
+            const list = document.getElementById('history-list');
+            
+            if (historyData.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-text">暂无练习记录</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = historyData.slice(0, 50).map(record => {
+                const time = new Date(record.timestamp);
+                const timeStr = `${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${String(time.getMinutes()).padStart(2, '0')}`;
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-question">${record.question}</div>
+                        <div class="history-result">
+                            <div class="history-answer">你: ${record.userAnswer} | 答案: ${record.correctAnswer}</div>
+                            <span class="history-status ${record.isCorrect ? 'correct' : 'wrong'}">
+                                ${record.isCorrect ? '✓ 正确' : '✗ 错误'}
+                            </span>
+                            <div class="history-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 渲染薄弱点分析
+        function renderWeakness() {
+            const chart = document.getElementById('weakness-chart');
+            const tipsCard = document.getElementById('tips-card');
+            const tipsList = document.getElementById('tips-list');
+            
+            const typeNames = {
+                addition: '加法',
+                subtraction: '减法',
+                multiplication: '乘法',
+                division: '除法'
+            };
+            
+            const typesWithData = Object.keys(weaknessData).filter(type => 
+                type !== 'mixed' && weaknessData[type].total > 0
+            );
+            
+            if (typesWithData.length === 0) {
+                chart.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <div class="empty-state-text">暂无足够数据进行分析<br>请先完成一些练习</div>
+                    </div>
+                `;
+                tipsCard.style.display = 'none';
+                return;
+            }
+            
+            const weaknessStats = typesWithData.map(type => {
+                const data = weaknessData[type];
+                const errorRate = data.total > 0 ? (data.wrong / data.total) : 0;
+                return { type, ...data, errorRate };
+            }).sort((a, b) => b.errorRate - a.errorRate);
+            
+            const maxErrorRate = Math.max(...weaknessStats.map(s => s.errorRate));
+            
+            chart.innerHTML = weaknessStats.map(stat => {
+                const percentage = maxErrorRate > 0 ? (stat.errorRate / maxErrorRate) * 100 : 0;
+                let level = 'low';
+                if (stat.errorRate > 0.5) level = 'high';
+                else if (stat.errorRate > 0.3) level = 'medium';
+                
+                return `
+                    <div class="weakness-item">
+                        <div class="weakness-label">${typeNames[stat.type]}</div>
+                        <div class="weakness-bar">
+                            <div class="weakness-fill ${level}" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="weakness-value">${(stat.errorRate * 100).toFixed(0)}%</div>
+                    </div>
+                `;
+            }).join('');
+            
+            const tips = [];
+            weaknessStats.forEach(stat => {
+                if (stat.errorRate > 0.3) {
+                    switch(stat.type) {
+                        case 'addition':
+                            tips.push('加法需要多练习进位计算');
+                            break;
+                        case 'subtraction':
+                            tips.push('减法需要多练习退位计算');
+                            break;
+                        case 'multiplication':
+                            tips.push('建议熟背乘法口诀表');
+                            break;
+                        case 'division':
+                            tips.push('除法需要理解乘法逆运算');
+                            break;
+                    }
+                }
+            });
+            
+            if (tips.length > 0) {
+                tipsList.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+                tipsCard.style.display = 'block';
+            } else {
+                tipsList.innerHTML = '<li>🎉 表现不错！继续保持！</li>';
+                tipsCard.style.display = 'block';
+            }
+        }
+        
+        // 清空历史
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？')) {
+                historyData = [];
+                weaknessData = {
+                    addition: { total: 0, wrong: 0 },
+                    subtraction: { total: 0, wrong: 0 },
+                    multiplication: { total: 0, wrong: 0 },
+                    division: { total: 0, wrong: 0 },
+                    mixed: { total: 0, wrong: 0 }
+                };
+                localStorage.removeItem('mathHistory');
+                localStorage.removeItem('mathWeakness');
+                updateStats();
+                renderHistory();
+                renderWeakness();
+            }
+        }
+        
+        // 显示分享引导
+        function showShareGuide() {
+            document.getElementById('share-guide').classList.add('show');
+        }
+        
+        // 隐藏分享引导
+        function hideShareGuide() {
+            document.getElementById('share-guide').classList.remove('show');
+        }
+        
+        // 键盘支持
+        document.addEventListener('keydown', function(e) {
+            if (!isAnswering) return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                inputNumber(e.key);
+            } else if (e.key === 'Enter') {
+                submitAnswer();
+            } else if (e.key === 'Backspace') {
+                const input = document.getElementById('answer-input');
+                input.value = input.value.slice(0, -1);
+            } else if (e.key === 'Escape') {
+                clearInput();
+            }
+        });
+        
+        // 防止页面滚动回弹（iOS）
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.history-list')) {
+                return;
+            }
+            e.preventDefault();
+        }, { passive: false });
+        
+        // GitHub Pages 错误页面重定向
+        if (isGitHubPages && window.location.pathname !== '/math-practice/' && 
+            window.location.pathname.indexOf('/math-practice/') !== 0) {
+            // 已经是正确路径，不做处理
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "math-practice-wechat",
+  "version": "1.0.0",
+  "description": "小学三年级数学练习H5应用 - 微信版",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx live-server --port=8080 --open=/",
+    "build": "echo '无需构建，直接部署index.html即可'",
+    "deploy:vercel": "vercel --prod",
+    "deploy:netlify": "netlify deploy --prod --dir=."
+  },
+  "keywords": [
+    "数学练习",
+    "小学数学",
+    "三年级",
+    "H5",
+    "微信"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
+  }
+}

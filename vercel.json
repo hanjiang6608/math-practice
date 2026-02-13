@@ -1,0 +1,19 @@
+# Vercel 部署配置
+# 访问 https://vercel.com 进行部署
+
+{
+  "version": 2,
+  "name": "math-practice-wechat",
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
