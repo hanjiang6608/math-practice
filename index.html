@@ -821,6 +821,49 @@
         .wechat-browser .container {
             min-height: calc(100vh - 20px);
         }
+        
+        /* 三连击奖励动画 */
+        .feedback.bonus {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #d9480f;
+            font-size: 18px;
+            font-weight: 700;
+            animation: bonusPulse 0.5s ease;
+        }
+        
+        .bonus-text {
+            display: inline-block;
+            animation: bonusScale 0.5s ease;
+        }
+        
+        @keyframes bonusPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes bonusScale {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* 星星奖励动画 */
+        .star-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 60px;
+            animation: starPop 1s ease forwards;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        
+        @keyframes starPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) translateY(-100px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -905,7 +948,13 @@
                 
                 <div class="question-card" id="question-card">
                     <div class="question-text" id="question-text">点击开始练习</div>
-                    <input type="number" class="answer-input" id="answer-input" placeholder="输入答案" readonly>
+                    <input type="number" 
+                           class="answer-input" 
+                           id="answer-input" 
+                           placeholder="输入答案" 
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autocomplete="off">
                     <div class="feedback" id="feedback"></div>
                 </div>
                 
@@ -1000,6 +1049,11 @@
         let currentQuestion = null;
         let isAnswering = false;
         let currentDifficulty = 'easy';
+        let consecutiveCorrect = 0; // 连续答对计数器
+        
+        // 音效设置（超级玛丽金币声）
+        const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+        correctSound.volume = 0.5; // 50%音量
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -1202,7 +1256,13 @@
             document.getElementById('action-btn').textContent = '提交答案';
             document.getElementById('question-card').className = 'question-card';
             document.getElementById('feedback').className = 'feedback';
-            document.getElementById('number-pad').style.display = 'grid';
+            // 隐藏数字键盘，使用系统键盘
+            document.getElementById('number-pad').style.display = 'none';
+            
+            // 自动聚焦输入框，调起系统键盘
+            setTimeout(() => {
+                document.getElementById('answer-input').focus();
+            }, 100);
             
             const feedback = document.getElementById('feedback');
             feedback.classList.remove('show');
@@ -1262,10 +1322,25 @@
             
             if (isCorrect) {
                 card.classList.add('correct');
-                feedback.textContent = '🎉 回答正确！真棒！';
-                feedback.className = 'feedback success show';
+                consecutiveCorrect++; // 增加连续答对计数
+                
+                // 播放正确音效
+                correctSound.currentTime = 0;
+                correctSound.play().catch(e => console.log('音效播放失败:', e));
+                
+                // 检查是否三连击
+                if (consecutiveCorrect === 3) {
+                    feedback.innerHTML = '🎉 <span class="bonus-text">三连击！太棒了！</span> 🎉';
+                    feedback.className = 'feedback success show bonus';
+                    showBonusAnimation(); // 显示奖励动画
+                    consecutiveCorrect = 0; // 重置计数
+                } else {
+                    feedback.textContent = '🎉 回答正确！真棒！';
+                    feedback.className = 'feedback success show';
+                }
             } else {
                 card.classList.add('wrong');
+                consecutiveCorrect = 0; // 答错重置计数
                 feedback.textContent = `❌ 回答错误。正确答案是 ${correctAnswer}`;
                 feedback.className = 'feedback error show';
             }
@@ -1412,6 +1487,20 @@
                 tipsList.innerHTML = '<li>🎉 表现不错！继续保持！</li>';
                 tipsCard.style.display = 'block';
             }
+        }
+        
+        // 显示三连击奖励动画
+        function showBonusAnimation() {
+            // 创建星星元素
+            const star = document.createElement('div');
+            star.className = 'star-animation';
+            star.innerHTML = '⭐⭐⭐';
+            document.body.appendChild(star);
+            
+            // 1秒后移除
+            setTimeout(() => {
+                star.remove();
+            }, 1000);
         }
         
         // 清空历史
