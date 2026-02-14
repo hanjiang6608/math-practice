@@ -1211,7 +1211,7 @@
             100% { transform: translate(-50%, -100%) scale(0.8); opacity: 0; }
         }
 
-        /* 用户选择界面 */
+        /* 用户登录界面 */
         .user-screen {
             position: fixed;
             top: 0;
@@ -1250,12 +1250,28 @@
             margin-bottom: 25px;
         }
 
+        .login-form {
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 20px;
+        }
+
+        .user-list-section {
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .user-list-title {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
         .user-list {
             width: 100%;
-            max-width: 300px;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
-            margin-bottom: 20px;
         }
 
         .user-item {
@@ -1369,17 +1385,20 @@
     </style>
 </head>
 <body>
-    <!-- 用户选择界面 -->
+    <!-- 用户登录界面 -->
     <div class="user-screen" id="user-screen">
         <div class="user-icon">👤</div>
-        <div class="user-title">选择游戏角色</div>
-        <div class="user-subtitle">每个角色有独立的进度</div>
-        <div class="user-list" id="user-list">
-            <!-- 用户列表将在这里动态生成 -->
+        <div class="user-title">请输入你的姓名</div>
+        <div class="user-subtitle">系统将为每位同学单独记录成绩</div>
+        <div class="login-form">
+            <input type="text" class="user-input" id="login-username" placeholder="输入姓名（如：张三）" maxlength="10">
+            <button class="user-btn" onclick="loginUser()">开始练习</button>
         </div>
-        <div class="user-actions">
-            <input type="text" class="user-input" id="new-username" placeholder="输入新角色名字" maxlength="10">
-            <button class="user-btn" onclick="createNewUser()">创建新角色</button>
+        <div class="user-list-section">
+            <div class="user-list-title">已登录的同学：</div>
+            <div class="user-list" id="user-list">
+                <!-- 用户列表将在这里动态生成 -->
+            </div>
         </div>
     </div>
 
@@ -1387,7 +1406,7 @@
     <div class="start-screen" id="start-screen">
         <div class="start-icon">🎓</div>
         <div class="start-title">数学小达人</div>
-        <div class="current-user" id="current-user-display">当前角色：玩家1</div>
+        <div class="current-user" id="current-user-display">当前同学：玩家1</div>
         <div class="start-features">
             <div class="feature-item">
                 <div class="feature-icon">🧠</div>
