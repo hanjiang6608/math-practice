@@ -1125,14 +1125,184 @@
             85% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -100%) scale(0.8); opacity: 0; }
         }
+
+        /* 用户选择界面 */
+        .user-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .user-screen.hidden {
+            display: none;
+        }
+
+        .user-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .user-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .user-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+
+        .user-list {
+            width: 100%;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .user-item {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .user-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.02);
+        }
+
+        .user-item.active {
+            border-color: #ffd43b;
+            background: rgba(255,212,59,0.2);
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .user-level {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .user-delete {
+            background: rgba(255,107,107,0.8);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .user-delete:hover {
+            background: #ff6b6b;
+        }
+
+        .user-actions {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .user-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .user-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .current-user {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .switch-user-btn {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .switch-user-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
+    <!-- 用户选择界面 -->
+    <div class="user-screen" id="user-screen">
+        <div class="user-icon">👤</div>
+        <div class="user-title">选择游戏角色</div>
+        <div class="user-subtitle">每个角色有独立的进度</div>
+        <div class="user-list" id="user-list">
+            <!-- 用户列表将在这里动态生成 -->
+        </div>
+        <div class="user-actions">
+            <input type="text" class="user-input" id="new-username" placeholder="输入新角色名字" maxlength="10">
+            <button class="user-btn" onclick="createNewUser()">创建新角色</button>
+        </div>
+    </div>
+
     <!-- 开始界面 -->
     <div class="start-screen" id="start-screen">
         <div class="start-icon">🎓</div>
         <div class="start-title">数学小达人</div>
-        <div class="start-subtitle">三年级智能练习系统</div>
+        <div class="current-user" id="current-user-display">当前角色：玩家1</div>
         <div class="start-features">
             <div class="feature-item">
                 <div class="feature-icon">🧠</div>
@@ -1152,6 +1322,7 @@
             </div>
         </div>
         <button class="start-btn" onclick="startApp()">开始学习</button>
+        <button class="switch-user-btn" onclick="showUserScreen()">切换角色</button>
     </div>
 
     <!-- 分享引导 -->
@@ -1301,33 +1472,237 @@
     <script>
         // 检测是否在GitHub Pages环境
         const isGitHubPages = window.location.hostname.includes('github.io');
-        
+
+        // 👤 用户系统
+        let currentUser = localStorage.getItem('mathCurrentUser') || null;
+        let users = JSON.parse(localStorage.getItem('mathUsers')) || {};
+
+        // 如果用户系统不存在，创建默认用户
+        if (Object.keys(users).length === 0) {
+            createDefaultUser();
+        }
+
+        // 数据存储（用户隔离）
+        function getUserData(userName) {
+            if (!users[userName]) return null;
+            return users[userName];
+        }
+
+        function saveUserData(userName, data) {
+            if (!users[userName]) return;
+            users[userName] = { ...users[userName], ...data };
+            localStorage.setItem('mathUsers', JSON.stringify(users));
+        }
+
+        function createDefaultUser() {
+            const defaultUser = {
+                name: '玩家1',
+                createdAt: new Date().toISOString(),
+                historyData: [],
+                weaknessData: {
+                    addition: { total: 0, wrong: 0 },
+                    subtraction: { total: 0, wrong: 0 },
+                    multiplication: { total: 0, wrong: 0 },
+                    division: { total: 0, wrong: 0 },
+                    mixed: { total: 0, wrong: 0 }
+                },
+                totalScore: 0,
+                currentLevel: 1,
+                currentExp: 0,
+                achievements: {
+                    'first_correct': { name: '🎯 初出茅庐', desc: '首次答对题目', unlocked: false },
+                    'streak_5': { name: '🔥 连击高手', desc: '连续答对5题', unlocked: false },
+                    'streak_10': { name: '⚡ 完美连击', desc: '连续答对10题', unlocked: false },
+                    'speed_demon': { name: '💨 闪电侠', desc: '3秒内答对一题', unlocked: false },
+                    'group_perfect': { name: '💯 全对大师', desc: '一组题目全对', unlocked: false },
+                    'level_5': { name: '📈 升级达人', desc: '达到5级', unlocked: false },
+                    'level_10': { name: '🎓 数学专家', desc: '达到10级', unlocked: false }
+                },
+                bestTime: 999,
+                currentDifficulty: 'easy'
+            };
+            users['玩家1'] = defaultUser;
+            currentUser = '玩家1';
+            localStorage.setItem('mathUsers', JSON.stringify(users));
+            localStorage.setItem('mathCurrentUser', currentUser);
+        }
+
+        function createNewUser() {
+            const userNameInput = document.getElementById('new-username');
+            const userName = userNameInput.value.trim();
+
+            if (!userName) {
+                alert('请输入角色名字');
+                return;
+            }
+
+            if (users[userName]) {
+                alert('该角色已存在，请选择其他名字');
+                return;
+            }
+
+            const newUser = {
+                name: userName,
+                createdAt: new Date().toISOString(),
+                historyData: [],
+                weaknessData: {
+                    addition: { total: 0, wrong: 0 },
+                    subtraction: { total: 0, wrong: 0 },
+                    multiplication: { total: 0, wrong: 0 },
+                    division: { total: 0, wrong: 0 },
+                    mixed: { total: 0, wrong: 0 }
+                },
+                totalScore: 0,
+                currentLevel: 1,
+                currentExp: 0,
+                achievements: {
+                    'first_correct': { name: '🎯 初出茅庐', desc: '首次答对题目', unlocked: false },
+                    'streak_5': { name: '🔥 连击高手', desc: '连续答对5题', unlocked: false },
+                    'streak_10': { name: '⚡ 完美连击', desc: '连续答对10题', unlocked: false },
+                    'speed_demon': { name: '💨 闪电侠', desc: '3秒内答对一题', unlocked: false },
+                    'group_perfect': { name: '💯 全对大师', desc: '一组题目全对', unlocked: false },
+                    'level_5': { name: '📈 升级达人', desc: '达到5级', unlocked: false },
+                    'level_10': { name: '🎓 数学专家', desc: '达到10级', unlocked: false }
+                },
+                bestTime: 999,
+                currentDifficulty: 'easy'
+            };
+
+            users[userName] = newUser;
+            localStorage.setItem('mathUsers', JSON.stringify(users));
+            userNameInput.value = '';
+            renderUserList();
+            alert(`角色 "${userName}" 创建成功！`);
+        }
+
+        function deleteUser(userName, event) {
+            event.stopPropagation();
+            if (Object.keys(users).length <= 1) {
+                alert('至少需要保留一个角色');
+                return;
+            }
+            if (confirm(`确定要删除角色 "${userName}" 吗？所有数据将被清除。`)) {
+                delete users[userName];
+                localStorage.setItem('mathUsers', JSON.stringify(users));
+                if (currentUser === userName) {
+                    currentUser = Object.keys(users)[0];
+                    localStorage.setItem('mathCurrentUser', currentUser);
+                }
+                renderUserList();
+            }
+        }
+
+        function selectUser(userName) {
+            currentUser = userName;
+            localStorage.setItem('mathCurrentUser', currentUser);
+            loadUserData();
+            renderUserList();
+
+            // 显示开始界面
+            document.getElementById('user-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('current-user-display').textContent = `当前角色：${currentUser}`;
+        }
+
+        function showUserScreen() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('user-screen').classList.remove('hidden');
+            renderUserList();
+        }
+
+        function renderUserList() {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+
+            Object.keys(users).forEach(userName => {
+                const user = users[userName];
+                const userItem = document.createElement('div');
+                userItem.className = `user-item ${currentUser === userName ? 'active' : ''}`;
+                userItem.onclick = () => selectUser(userName);
+
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">${userName}</div>
+                        <div class="user-level">Lv.${user.currentLevel} · ${user.totalScore}分</div>
+                    </div>
+                    <button class="user-delete" onclick="deleteUser('${userName}', event)">删除</button>
+                `;
+
+                userList.appendChild(userItem);
+            });
+        }
+
+        function loadUserData() {
+            if (!currentUser || !users[currentUser]) {
+                currentUser = Object.keys(users)[0];
+                localStorage.setItem('mathCurrentUser', currentUser);
+            }
+
+            const userData = users[currentUser];
+            historyData = userData.historyData || [];
+            weaknessData = userData.weaknessData || {
+                addition: { total: 0, wrong: 0 },
+                subtraction: { total: 0, wrong: 0 },
+                multiplication: { total: 0, wrong: 0 },
+                division: { total: 0, wrong: 0 },
+                mixed: { total: 0, wrong: 0 }
+            };
+            totalScore = userData.totalScore || 0;
+            currentLevel = userData.currentLevel || 1;
+            currentExp = userData.currentExp || 0;
+            achievements = userData.achievements || {};
+            bestTime = userData.bestTime || 999;
+            currentDifficulty = userData.currentDifficulty || 'easy';
+
+            updateStats();
+            updateGameStats();
+            updateDifficultyButtons();
+        }
+
+        function saveCurrentUserData() {
+            if (!currentUser) return;
+
+            const userData = {
+                name: currentUser,
+                historyData: historyData,
+                weaknessData: weaknessData,
+                totalScore: totalScore,
+                currentLevel: currentLevel,
+                currentExp: currentExp,
+                achievements: achievements,
+                bestTime: bestTime,
+                currentDifficulty: currentDifficulty
+            };
+
+            saveUserData(currentUser, userData);
+        }
+
         // 数据存储
-        let historyData = JSON.parse(localStorage.getItem('mathHistory')) || [];
-        let weaknessData = JSON.parse(localStorage.getItem('mathWeakness')) || {
+        let historyData = [];
+        let weaknessData = {
             addition: { total: 0, wrong: 0 },
             subtraction: { total: 0, wrong: 0 },
             multiplication: { total: 0, wrong: 0 },
             division: { total: 0, wrong: 0 },
             mixed: { total: 0, wrong: 0 }
         };
-        
+
         let currentQuestion = null;
         let isAnswering = false;
         let currentDifficulty = 'easy';
         let consecutiveCorrect = 0; // 连续答对计数器
-        
+
         // 组题设置
         const GROUP_SIZE = 10; // 每组10道题
         let currentGroupCount = 0; // 当前组内题目计数
         let groupCorrectCount = 0; // 当前组内正确题数
-        
+
         // 🎮 游戏化系统
-        let totalScore = parseInt(localStorage.getItem('mathTotalScore')) || 0;
-        let currentLevel = parseInt(localStorage.getItem('mathLevel')) || 1;
-        let currentExp = parseInt(localStorage.getItem('mathExp')) || 0;
+        let totalScore = 0;
+        let currentLevel = 1;
+        let currentExp = 0;
         let expToNextLevel = currentLevel * 100;
-        
+
         // 称号系统
         const titles = [
             { level: 1, title: '🌱 数学新手', color: '#51cf66' },
@@ -1336,26 +1711,18 @@
             { level: 20, title: '🏆 数学大师', color: '#ffd43b' },
             { level: 30, title: '👑 数学王者', color: '#a855f7' }
         ];
-        
+
         // 成就系统
-        const achievements = JSON.parse(localStorage.getItem('mathAchievements')) || {
-            'first_correct': { name: '🎯 初出茅庐', desc: '首次答对题目', unlocked: false },
-            'streak_5': { name: '🔥 连击高手', desc: '连续答对5题', unlocked: false },
-            'streak_10': { name: '⚡ 完美连击', desc: '连续答对10题', unlocked: false },
-            'speed_demon': { name: '💨 闪电侠', desc: '3秒内答对一题', unlocked: false },
-            'group_perfect': { name: '💯 全对大师', desc: '一组题目全对', unlocked: false },
-            'level_5': { name: '📈 升级达人', desc: '达到5级', unlocked: false },
-            'level_10': { name: '🎓 数学专家', desc: '达到10级', unlocked: false }
-        };
-        
+        let achievements = {};
+
         // 计时系统
         let questionStartTime = 0;
-        let bestTime = parseInt(localStorage.getItem('mathBestTime')) || 999;
-        
+        let bestTime = 999;
+
         // 音效设置（超级玛丽金币声）
         const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
         correctSound.volume = 0.5; // 50%音量
-        
+
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 检测微信浏览器
@@ -1363,16 +1730,30 @@
             if (isWechat) {
                 document.body.classList.add('wechat-browser');
             }
-            
+
+            // 加载用户数据
+            loadUserData();
+
+            // 如果没有当前用户，显示用户选择界面
+            if (!currentUser) {
+                document.getElementById('user-screen').classList.remove('hidden');
+                document.getElementById('start-screen').classList.add('hidden');
+                renderUserList();
+            } else {
+                document.getElementById('user-screen').classList.add('hidden');
+                document.getElementById('start-screen').classList.remove('hidden');
+                document.getElementById('current-user-display').textContent = `当前角色：${currentUser}`;
+            }
+
             // 监听输入框输入事件，实现自动提交
             const answerInput = document.getElementById('answer-input');
             answerInput.addEventListener('input', function(e) {
                 if (!isAnswering || !currentQuestion) return;
-                
+
                 const inputValue = e.target.value;
                 const correctAnswer = currentQuestion.answer;
                 const answerLength = String(correctAnswer).length;
-                
+
                 // 当输入位数等于答案位数时，自动提交
                 if (inputValue.length === answerLength) {
                     // 延迟100ms，让用户看到输入的数字
@@ -1381,7 +1762,7 @@
                     }, 100);
                 }
             });
-            
+
             updateStats();
             updateGameStats(); // 初始化游戏化UI
         });
@@ -1635,8 +2016,7 @@
             if (!isCorrect) {
                 weaknessData[currentQuestion.type].wrong++;
             }
-            localStorage.setItem('mathWeakness', JSON.stringify(weaknessData));
-            
+
             // 添加到历史记录
             const record = {
                 question: currentQuestion.display,
@@ -1650,7 +2030,6 @@
             if (historyData.length > 100) {
                 historyData = historyData.slice(0, 100);
             }
-            localStorage.setItem('mathHistory', JSON.stringify(historyData));
             
             // 显示结果
             const card = document.getElementById('question-card');
@@ -1690,8 +2069,7 @@
                 
                 // 更新总分
                 totalScore += points;
-                localStorage.setItem('mathTotalScore', totalScore);
-                
+
                 // 更新经验值
                 currentExp += expGain;
                 let levelUp = false;
@@ -1701,8 +2079,6 @@
                     expToNextLevel = currentLevel * 100;
                     levelUp = true;
                 }
-                localStorage.setItem('mathLevel', currentLevel);
-                localStorage.setItem('mathExp', currentExp);
                 
                 // 检查成就
                 checkAchievement('first_correct');
@@ -1779,6 +2155,9 @@
             actionBtn.textContent = btnText;
             actionBtn.disabled = false;
             isAnswering = false;
+
+            // 保存用户数据
+            saveCurrentUserData();
         }
         
         // 更新统计
