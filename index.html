@@ -1631,67 +1631,82 @@
             localStorage.setItem('mathCurrentUser', currentUser);
         }
 
-        function createNewUser() {
-            const userNameInput = document.getElementById('new-username');
+        // 用户登录功能
+        function loginUser() {
+            const userNameInput = document.getElementById('login-username');
             const userName = userNameInput.value.trim();
 
             if (!userName) {
-                alert('请输入角色名字');
+                alert('请输入你的姓名');
                 return;
             }
 
-            if (users[userName]) {
-                alert('该角色已存在，请选择其他名字');
-                return;
+            // 如果用户不存在，自动创建新用户
+            if (!users[userName]) {
+                const newUser = {
+                    name: userName,
+                    createdAt: new Date().toISOString(),
+                    historyData: [],
+                    weaknessData: {
+                        addition: { total: 0, wrong: 0 },
+                        subtraction: { total: 0, wrong: 0 },
+                        multiplication: { total: 0, wrong: 0 },
+                        division: { total: 0, wrong: 0 },
+                        mixed: { total: 0, wrong: 0 }
+                    },
+                    totalScore: 0,
+                    currentLevel: 1,
+                    currentExp: 0,
+                    achievements: {
+                        'first_correct': { name: '🎯 初出茅庐', desc: '首次答对题目', unlocked: false },
+                        'streak_5': { name: '🔥 连击高手', desc: '连续答对5题', unlocked: false },
+                        'streak_10': { name: '⚡ 完美连击', desc: '连续答对10题', unlocked: false },
+                        'speed_demon': { name: '💨 闪电侠', desc: '3秒内答对一题', unlocked: false },
+                        'group_perfect': { name: '💯 全对大师', desc: '一组题目全对', unlocked: false },
+                        'level_5': { name: '📈 升级达人', desc: '达到5级', unlocked: false },
+                        'level_10': { name: '🎓 数学专家', desc: '达到10级', unlocked: false }
+                    },
+                    bestTime: 999,
+                    currentDifficulty: 'easy'
+                };
+
+                users[userName] = newUser;
+                localStorage.setItem('mathUsers', JSON.stringify(users));
             }
 
-            const newUser = {
-                name: userName,
-                createdAt: new Date().toISOString(),
-                historyData: [],
-                weaknessData: {
-                    addition: { total: 0, wrong: 0 },
-                    subtraction: { total: 0, wrong: 0 },
-                    multiplication: { total: 0, wrong: 0 },
-                    division: { total: 0, wrong: 0 },
-                    mixed: { total: 0, wrong: 0 }
-                },
-                totalScore: 0,
-                currentLevel: 1,
-                currentExp: 0,
-                achievements: {
-                    'first_correct': { name: '🎯 初出茅庐', desc: '首次答对题目', unlocked: false },
-                    'streak_5': { name: '🔥 连击高手', desc: '连续答对5题', unlocked: false },
-                    'streak_10': { name: '⚡ 完美连击', desc: '连续答对10题', unlocked: false },
-                    'speed_demon': { name: '💨 闪电侠', desc: '3秒内答对一题', unlocked: false },
-                    'group_perfect': { name: '💯 全对大师', desc: '一组题目全对', unlocked: false },
-                    'level_5': { name: '📈 升级达人', desc: '达到5级', unlocked: false },
-                    'level_10': { name: '🎓 数学专家', desc: '达到10级', unlocked: false }
-                },
-                bestTime: 999,
-                currentDifficulty: 'easy'
-            };
+            // 登录用户
+            currentUser = userName;
+            localStorage.setItem('mathCurrentUser', currentUser);
+            loadUserData();
 
-            users[userName] = newUser;
-            localStorage.setItem('mathUsers', JSON.stringify(users));
+            // 清空输入框
             userNameInput.value = '';
-            renderUserList();
-            alert(`角色 "${userName}" 创建成功！`);
+
+            // 显示开始界面
+            document.getElementById('user-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('current-user-display').textContent = `当前同学：${currentUser}`;
+
+            // 如果是新用户，显示欢迎提示
+            if (users[userName].historyData.length === 0) {
+                setTimeout(() => {
+                    alert(`欢迎 ${currentUser} 同学！开始你的数学练习之旅吧！`);
+                }, 500);
+            }
         }
+
+        // 回车键登录
+        document.getElementById('login-username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginUser();
+            }
+        });
 
         function deleteUser(userName, event) {
             event.stopPropagation();
-            if (Object.keys(users).length <= 1) {
-                alert('至少需要保留一个角色');
-                return;
-            }
-            if (confirm(`确定要删除角色 "${userName}" 吗？所有数据将被清除。`)) {
+            if (confirm(`确定要删除 "${userName}" 同学的数据吗？所有练习记录将被清除。`)) {
                 delete users[userName];
                 localStorage.setItem('mathUsers', JSON.stringify(users));
-                if (currentUser === userName) {
-                    currentUser = Object.keys(users)[0];
-                    localStorage.setItem('mathCurrentUser', currentUser);
-                }
                 renderUserList();
             }
         }
@@ -1700,12 +1715,11 @@
             currentUser = userName;
             localStorage.setItem('mathCurrentUser', currentUser);
             loadUserData();
-            renderUserList();
 
             // 显示开始界面
             document.getElementById('user-screen').classList.add('hidden');
             document.getElementById('start-screen').classList.remove('hidden');
-            document.getElementById('current-user-display').textContent = `当前角色：${currentUser}`;
+            document.getElementById('current-user-display').textContent = `当前同学：${currentUser}`;
         }
 
         function showUserScreen() {
@@ -1718,7 +1732,17 @@
             const userList = document.getElementById('user-list');
             userList.innerHTML = '';
 
-            Object.keys(users).forEach(userName => {
+            // 按总分排序显示
+            const sortedUsers = Object.keys(users).sort((a, b) => {
+                return (users[b].totalScore || 0) - (users[a].totalScore || 0);
+            });
+
+            if (sortedUsers.length === 0) {
+                userList.innerHTML = '<div style="opacity: 0.6; padding: 10px;">暂无同学登录</div>';
+                return;
+            }
+
+            sortedUsers.forEach(userName => {
                 const user = users[userName];
                 const userItem = document.createElement('div');
                 userItem.className = `user-item ${currentUser === userName ? 'active' : ''}`;
@@ -1727,7 +1751,7 @@
                 userItem.innerHTML = `
                     <div class="user-info">
                         <div class="user-name">${userName}</div>
-                        <div class="user-level">Lv.${user.currentLevel} · ${user.totalScore}分</div>
+                        <div class="user-level">Lv.${user.currentLevel || 1} · ${user.totalScore || 0}分 · ${user.historyData ? user.historyData.length : 0}题</div>
                     </div>
                     <button class="user-delete" onclick="deleteUser('${userName}', event)">删除</button>
                 `;
