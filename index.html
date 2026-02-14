@@ -1039,14 +1039,99 @@
             pointer-events: none;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
         }
-        
+
         @keyframes levelUpPop {
             0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
             20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
             80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
             100% { transform: translate(-50%, -50%) scale(1) translateY(-50px); opacity: 0; }
         }
-        
+
+        /* 恭喜升级弹窗 */
+        .congrats-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .congrats-content {
+            background: linear-gradient(135deg, #ffd43b 0%, #fcc419 100%);
+            padding: 30px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: congratsPop 0.5s ease;
+            max-width: 300px;
+        }
+
+        @keyframes congratsPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .congrats-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            animation: congratsIconBounce 1s ease infinite;
+        }
+
+        @keyframes congratsIconBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .congrats-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #d9480f;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+        }
+
+        .congrats-message {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .congrats-encourage {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .congrats-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .congrats-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .congrats-btn:active {
+            transform: scale(0.98);
+        }
+
         /* 得分弹出动画 */
         .score-popup {
             position: fixed;
@@ -2335,18 +2420,32 @@
         
         // 显示升级动画
         function showLevelUpAnimation(levelName) {
+            // 创建恭喜升级弹窗
+            const congratsModal = document.createElement('div');
+            congratsModal.className = 'congrats-modal';
+            congratsModal.innerHTML = `
+                <div class="congrats-content">
+                    <div class="congrats-icon">🎉</div>
+                    <div class="congrats-title">恭喜升级！</div>
+                    <div class="congrats-message">你已经成功升级到${levelName}难度</div>
+                    <div class="congrats-encourage">继续加油，挑战更高难度！</div>
+                    <button class="congrats-btn" onclick="this.closest('.congrats-modal').remove()">太棒了！</button>
+                </div>
+            `;
+            document.body.appendChild(congratsModal);
+
             // 创建升级提示元素
             const levelUp = document.createElement('div');
             levelUp.className = 'level-up-animation';
             levelUp.innerHTML = `🎊 升级到${levelName}难度！🎊`;
             document.body.appendChild(levelUp);
-            
+
             // 播放升级音效（使用更欢快的音效）
             const levelUpSound = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3');
             levelUpSound.volume = 0.6;
             levelUpSound.play().catch(e => console.log('升级音效播放失败:', e));
-            
-            // 2秒后移除
+
+            // 2秒后移除升级动画
             setTimeout(() => {
                 levelUp.remove();
             }, 2000);
